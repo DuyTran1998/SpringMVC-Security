@@ -1,0 +1,21 @@
+MultiThreading Excercise
+
+Scenario:
+
+TMABank need to support:
+1. Automatically transfer Salary to TMA employees every 5th of Month.
+   . every employee have difference base Salary, benefit bonus ...
+2. Some Employees are under LOAN for their House in TMA Resident Tower.
+   . Bank System need to automatically get LOAN payment every 1st of Month,
+   . If there is a employee did not have enough LOAN amount in their Bank Account Balance, a email send to their TMA for informing the punishment.
+3. Employee can withdraw cash or transfer to other accounts at the same time with other transaction.
+   . Developer need to update Balance correctly if many transactions happen on a same account balance at the same time.
+   . Make Sure that Balance never less than 50k vnd
+
+Guildeline:
+1, Create User class with attributes such as ID, name, balance, loanPaymentMonthly, salary, benefit bonus, etc.
+2, Using https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ScheduledExecutorService.html for triggering
+   . Salary Payment
+   . LOAN Payment
+   . Implement trigger conditions, loan payment, send email, etc
+3. Use AtomicLong and synchronized for do mutable and transactions.

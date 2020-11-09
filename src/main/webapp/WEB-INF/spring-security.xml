@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:beans="http://www.springframework.org/schema/beans"
+             xsi:schemaLocation=
+                     "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		              http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <beans:bean id="restServicesEntryPoint"
+                class="com.duytran.security.RestAuthenticationEntryPoint" />
+
+    <beans:bean id="customAccessDeniedHandler"
+                class="com.duytran.security.CustomAccessDeniedHandler" />
+
+    <beans:bean id="jwtAuthenticationFilter" class="com.duytran.security.JwtAuthenticationTokenFilter">
+        <beans:property name="authenticationManager" ref="authenticationManager" />
+    </beans:bean>
+
+    <http pattern="/api/auth/login" security="none"/>
+    <http pattern="/api/auth/register" security="none"/>
+    <http pattern="/test/" security="none"/>
+
+    <http auto-config="false" use-expressions="true"
+          create-session="always" entry-point-ref="restServicesEntryPoint">
+        <intercept-url pattern="/api/admin/**" access="hasRole('ROLE_ADMIN')" method="GET"/>
+        <intercept-url pattern="/api/admin/**" access="hasRole('ROLE_ADMIN')" method="PUT"/>
+        <intercept-url pattern="/api/**" access="hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')" method="GET"/>
+        <intercept-url pattern="/api/**" access="hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')" method="POST"/>
+        <intercept-url pattern="/api/**" access="hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')" method="PUT"/>
+        <intercept-url pattern="/api/**" access="hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')" method="DELETE"/>
+        <custom-filter position="FORM_LOGIN_FILTER" ref="jwtAuthenticationFilter"/>
+        <access-denied-handler ref="customAccessDeniedHandler"/>
+        <csrf disabled="true" />
+    </http>
+
+    <authentication-manager id="authenticationManager">
+        <authentication-provider ref="authProvider"/>
+    </authentication-manager>
+
+    <beans:bean id="userDetailsService" class="com.duytran.services.SpringUserDetailsService" />
+
+    <beans:bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy" />
+
+    <beans:bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+
+    <beans:bean id="authProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+        <beans:property name="userDetailsService" ref="userDetailsService"/>
+        <beans:property name="passwordEncoder" ref="passwordEncoder"/>
+    </beans:bean>
+
+</beans:beans>
