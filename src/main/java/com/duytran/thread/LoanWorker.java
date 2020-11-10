@@ -37,7 +37,8 @@ public class LoanWorker implements Runnable {
             mail.setTo(userInfo.getEmail());
             mail.setSubject("NOTIFICATION LOAN MONTHLY");
             mail.setText("Your Balance don't enough money to pay for loan");
-            LOG.info(String.format("TMA BANKING SYSTEM sent to %s to NOTIFY that your BALANCE don't ENOUGH to pay the loan payment monthly.", userInfo.getEmail()));
+            LOG.info(String.format("TMA BANKING SYSTEM sent to %s to NOTIFY that your BALANCE don't ENOUGH " +
+                                                            "to pay the loan payment monthly.", userInfo.getEmail()));
         }
         //        javaMailSender.send(mail);
     }
