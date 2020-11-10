@@ -1,25 +1,27 @@
 package com.duytran.constant;
 
-public interface Header {
-   String DEPOSIT = "DEPOSIT";
+public final class Header {
+   private Header() {}
 
-   String WITHDRAW = "WITHDRAW";
+   public static final String DEPOSIT = "DEPOSIT";
 
-   String RE_DEPOSIT = "RE_DEPOSIT";
+   public static final String WITHDRAW = "WITHDRAW";
 
-   String DEPOSIT_SALARY = "DEPOSIT_SALARY";
+   public static final String RE_DEPOSIT = "RE_DEPOSIT";
 
-   String CHECK_LOAN = "CHECK_LOAN";
+   public static final String DEPOSIT_SALARY = "DEPOSIT_SALARY";
 
-   String UPDATE_CREDIT = "UPDATE_CREDIT";
+   public static final String CHECK_LOAN = "CHECK_LOAN";
 
-   String DEVICE_CREATE = "DEVICE_CREATE";
+   public static final String UPDATE_CREDIT = "UPDATE_CREDIT";
 
-   String DEVICE_UPDATE = "DEVICE_UPDATE";
+   public static final String DEVICE_CREATE = "DEVICE_CREATE";
 
-   String DEVICE_DELETE = "DEVICE_DELETE";
+   public static final String DEVICE_UPDATE = "DEVICE_UPDATE";
 
-   String DEVICE_GET = "DEVICE_GET";
+   public static final String DEVICE_DELETE = "DEVICE_DELETE";
 
-   String USER_UPDATE = "USER_UPDATE";
+   public static final String DEVICE_GET = "DEVICE_GET";
+
+   public static final String USER_UPDATE = "USER_UPDATE";
 }
