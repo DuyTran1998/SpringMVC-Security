@@ -35,20 +35,23 @@ public class DeviceService {
     @Autowired
     DeviceRepository deviceRepository;
 
-
+    // Create a Device
     public void createDevice(Device device, String correlationId, Destination destination) {
+        // Validate IPAddress
         if (validateInformationDevice(device.getIpAddress(), IPV4_REGEX)) {
             sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
                     Message.IPADDRESS_INVALID, device), correlationId);
             return;
         }
 
+        // Validate MacAddress
         if (validateInformationDevice(device.getMacAddress(), MAC_REGEX)) {
             sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
                     Message.MAC_ADDRESS_INVALID, device), correlationId);
             return;
         }
 
+        // Validate ManagedIP
         if (validateInformationDevice(device.getManagedIp(), IPV4_REGEX)) {
             sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
                     Message.MANAGED_IP_INVALID, device), correlationId);
@@ -72,6 +75,8 @@ public class DeviceService {
 //                    Message.MODIFIED_DATE_INVALID, device), correlationId);
 //            return;
 //        }
+
+        // Validate Date field
         if (device.getModifiedDate() == null || device.getLastKnownUpAt() == null ||
                 device.getDiscoveredDateTime() == null) {
             sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
@@ -79,17 +84,24 @@ public class DeviceService {
             return;
         }
 
-
-
+        // Check exist IpAddress
         if (deviceRepository.existDeviceByIpAddress(device.getIpAddress())) {
             sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
                     Message.IPADDRESS_EXISTS, device), correlationId);
             return;
         }
 
+        // Check exist MacAddress
         if (deviceRepository.existDeviceByMacAddress(device.getMacAddress())) {
             sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
                     Message.MAC_ADDRESS_EXISTS, device), correlationId);
+            return;
+        }
+
+        // Check exist ManagedIp
+        if (deviceRepository.existDeviceByManagedIp(device.getManagedIp())) {
+            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                    Message.MANAGED_IP_EXISTS, device), correlationId);
             return;
         }
 
@@ -103,6 +115,7 @@ public class DeviceService {
         }
     }
 
+    // Update a device
     public void updateDevice(Device device, String correlationId, Destination destination) {
         if (validateInformationDevice(device.getIpAddress(), IPV4_REGEX)) {
             sender.replyMessage(destination,new ResponseModel(HttpStatus.BAD_REQUEST.value(),
@@ -154,6 +167,14 @@ public class DeviceService {
                 }
             }
 
+            if  (!updateDevice.getManagedIp().equals(device.getManagedIp())) {
+                if (deviceRepository.existDeviceByManagedIp(device.getManagedIp())) {
+                    sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                            Message.MANAGED_IP_EXISTS, device), correlationId);
+                    return;
+                }
+            }
+
             try {
                 deviceRepository.save(device);
                 sender.replyMessage(destination, new ResponseModel(HttpStatus.OK.value(),
@@ -168,6 +189,7 @@ public class DeviceService {
         }
     }
 
+    // Delete a device
     public void deleteDevice(String id, String correlationId, Destination destination) {
         if (deviceRepository.exists(id)) {
             try {
@@ -184,6 +206,7 @@ public class DeviceService {
         }
     }
 
+    // Get a Device
     public void getDevice(String id, String correlationId, Destination destination) {
         Optional<Device> device = deviceRepository.findDeviceById(id);
         if (device.isPresent()) {

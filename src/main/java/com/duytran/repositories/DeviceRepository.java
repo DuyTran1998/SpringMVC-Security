@@ -20,4 +20,7 @@ public interface DeviceRepository extends MongoRepository<Device, String> {
 
     @ExistsQuery(value = "{'ipAddress': ?0}")
     boolean existDeviceByIpAddress(String ipAddress);
+
+    @ExistsQuery(value = "{'managedIp': ?0}")
+    boolean existDeviceByManagedIp(String managedIp);
 }

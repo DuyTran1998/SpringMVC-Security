@@ -47,6 +47,8 @@ public interface Message {
 
     String MANAGED_IP_INVALID = "Managed is Invalid";
 
+    String MANAGED_IP_EXISTS = "ManagedIp already exists";
+
     String DISCOVERED_DATETIME_INVALID = "DiscoveredDateTime field is Invalid";
 
     String LAST_KNOWN_UP_AT_INVALID = "LastKnownUpAt field is Invalid!";
@@ -54,4 +56,5 @@ public interface Message {
     String MODIFIED_DATE_INVALID = "ModifiedDate field is Invalid!";
 
     String DATETIME_INVALID = "Datetime field is Invalid!";
+
 }

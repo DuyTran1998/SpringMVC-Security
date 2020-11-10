@@ -41,7 +41,7 @@ public class TMACreditService {
     @Autowired
     MessageTransferModel messageTransferModel;
 
-    final ExecutorService executorService = Executors.newFixedThreadPool(5);
+    final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     @Value("${user.queueRequest}")
     private String queueRequest;
@@ -49,11 +49,9 @@ public class TMACreditService {
     public void depositSalary() {
         LOG.info("TMA payment salary for employee - In 5/*/*");
         List<UserInfo> userInfoList = userInfoRepository.findAll();
-//        ExecutorService executorService = Executors.newFixedThreadPool(5);
         for (UserInfo userInfo : userInfoList) {
             executorService.execute(new SalaryWorker(userInfo, mongoTemplate));
         }
-//        executorService.shutdown();
     }
 
     public void loanPaymentMonthly() {
@@ -61,12 +59,11 @@ public class TMACreditService {
         List<UserInfo> userInfoList = userInfoRepository.findAll();
 
         for (UserInfo userInfo : userInfoList) {
-            if (userInfo.getEmail() == null || userInfo.getTmaCredit().getBalance() >= userInfo.getTmaCredit().getLoanPayment()) {
+            if (userInfo.getEmail() == null || userInfo.getTmaCredit().getLoanPayment() == 0) {
                 continue;
             }
-            executorService.execute(new LoanWorker(userInfo, javaMailSender));
+            executorService.execute(new LoanWorker(userInfo, mongoTemplate, javaMailSender));
         }
-//        executorService.shutdown();
     }
 
     public void withdraw(TransferOrder transaction, String correlationId, Destination destination) {

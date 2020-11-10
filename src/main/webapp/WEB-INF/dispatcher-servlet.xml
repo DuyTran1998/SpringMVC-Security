@@ -54,9 +54,9 @@
         <task:scheduled ref="accountant" method="depositSalary" cron="0 0 0 5 * ?" />
         <task:scheduled ref="loan" method="checkLoanPaymentMonthly" cron="0 0 0 1 * ?" />
 
-        <task:scheduled ref="accountant" method="depositSalary" cron="10 * * * * ?" />
-        <task:scheduled ref="loan" method="checkLoanPaymentMonthly" cron="2 * * * * ?" />
-        <task:scheduled ref="client" method="transferMoney" cron="10 * * * * ?" />
+<!--        <task:scheduled ref="accountant" method="depositSalary" cron="10 * * * * ?" />-->
+<!--        <task:scheduled ref="loan" method="checkLoanPaymentMonthly" cron="2 * * * * ?" />-->
+<!--        <task:scheduled ref="client" method="transferMoney" cron="10 * * * * ?" />-->
     </task:scheduled-tasks>
 
     <task:scheduler id="taskScheduler" pool-size="1"/>

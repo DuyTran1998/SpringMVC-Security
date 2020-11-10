@@ -55,7 +55,7 @@ public class WithdrawWorker implements Runnable{
                 messageTransferModel.setValue(Header.DEPOSIT, savedTrans);
                 sender.sendToQueue("userRequestQueue", messageTransferModel, correlationId);
 
-                LOG.info(Header.DEPOSIT +  " " + correlationId);
+                LOG.info(Header.DEPOSIT +  " " + transferOrder.getReceiverID());
 //                sender.replyMessage(destination, new ResponseModel(HttpStatus.OK.value(),
 //                        MessageResponse.TRANSACTION_SUCCESS, transaction), correlationId);
             } catch ( OptimisticLockingFailureException e) {
@@ -71,7 +71,7 @@ public class WithdrawWorker implements Runnable{
     }
 
     public boolean isValidWithdrawAction(long balance, long withdrawValue) {
-        return balance >= withdrawValue + 10;
+        return balance - withdrawValue >= 10;
     }
 
     public static class WithdrawWorkerBuilder{
