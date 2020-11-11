@@ -49,6 +49,8 @@ public class DeviceListener {
                 String idToGet = objectMapper.convertValue(messageTransferModel.getPayload(), String.class);
                 deviceService.getDevice(idToGet, correlationId, replyTo);
                 break;
+            case Header.DEVICE_GET_ALL:
+                deviceService.getAll(correlationId, replyTo);
     }
   }
 }

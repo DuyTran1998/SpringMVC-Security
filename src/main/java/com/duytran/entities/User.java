@@ -1,7 +1,6 @@
 package com.duytran.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sun.istack.internal.NotNull;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -22,7 +21,6 @@ public class User {
 
 	private String password;
 
-	@NotNull
 	private Role[] roles;
 
 	@DBRef(db = "userInfo", lazy = true)

@@ -23,5 +23,7 @@ public final class Header {
 
    public static final String DEVICE_GET = "DEVICE_GET";
 
+   public static final String DEVICE_GET_ALL = "DEVICE_GET_ALL";
+
    public static final String USER_UPDATE = "USER_UPDATE";
 }

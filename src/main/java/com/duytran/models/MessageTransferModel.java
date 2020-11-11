@@ -16,6 +16,10 @@ public class MessageTransferModel {
         this.payload = payload;
     }
 
+    public void setHeader(String header) {
+        this.header = header;
+    }
+
     public void setValue(String header, Object payload) {
         this.header = header;
         this.payload = payload;

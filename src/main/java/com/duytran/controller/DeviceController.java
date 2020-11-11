@@ -61,7 +61,7 @@ public class DeviceController {
 
     // Update a Device
     @RequestMapping(method = RequestMethod.PUT, produces = "application/json")
-    public DeferredResult<ResponseEntity<?>> updateDevice(@RequestBody Device device) throws InterruptedException {
+    public DeferredResult<ResponseEntity<?>> updateDevice(@RequestBody Device device) {
         final DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>(10000L);
         deferredResult.onTimeout(() -> {
             deferredResult.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
@@ -82,8 +82,8 @@ public class DeviceController {
     }
 
     // Delete a device
-    @RequestMapping(method = RequestMethod.DELETE)
-    public DeferredResult<ResponseEntity<?>> deleteDevice(@RequestParam String id) throws InterruptedException {
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public DeferredResult<ResponseEntity<?>> deleteDevice(@PathVariable String id) {
         final DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>(10000L);
         deferredResult.onTimeout(() -> {
             deferredResult.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
@@ -104,8 +104,8 @@ public class DeviceController {
     }
 
     // Get a device
-    @RequestMapping(method = RequestMethod.GET)
-    public DeferredResult<ResponseEntity<?>> getDevice(@RequestParam String id) throws InterruptedException {
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public DeferredResult<ResponseEntity<?>> getDevice(@PathVariable String id) {
         final DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>(10000L);
         deferredResult.onTimeout(() -> {
             deferredResult.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
@@ -113,6 +113,27 @@ public class DeviceController {
         });
 
         messageTransferModel.setValue(Header.DEVICE_GET, id);
+        new Thread(new MessagingWorker.MessagingWorkerBuilder(deferredResult)
+                .setActiveMQConnectionFactory(activeMQConnectionFactory)
+                .setObjectMapper(objectMapper)
+                .setSender(sender)
+                .setMessageTransferModel(messageTransferModel)
+                .setQueueRequest(queueRequest)
+                .setQueueResponse(queueResponse)
+                .build())
+                .start();
+        return deferredResult;
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public DeferredResult<ResponseEntity<?>> getAllDevice() {
+        final DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>(10000L);
+        deferredResult.onTimeout(() -> {
+            deferredResult.setErrorResult(ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
+                    .body("Request timeout!"));
+        });
+
+        messageTransferModel.setHeader(Header.DEVICE_GET_ALL);
         new Thread(new MessagingWorker.MessagingWorkerBuilder(deferredResult)
                 .setActiveMQConnectionFactory(activeMQConnectionFactory)
                 .setObjectMapper(objectMapper)

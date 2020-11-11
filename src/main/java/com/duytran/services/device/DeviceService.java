@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.jms.Destination;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,155 +38,66 @@ public class DeviceService {
 
     // Create a Device
     public void createDevice(Device device, String correlationId, Destination destination) {
-        // Validate IPAddress
-        if (validateInformationDevice(device.getIpAddress(), IPV4_REGEX)) {
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.IPADDRESS_INVALID, device), correlationId);
-            return;
-        }
-
-        // Validate MacAddress
-        if (validateInformationDevice(device.getMacAddress(), MAC_REGEX)) {
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.MAC_ADDRESS_INVALID, device), correlationId);
-            return;
-        }
-
-        // Validate ManagedIP
-        if (validateInformationDevice(device.getManagedIp(), IPV4_REGEX)) {
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.MANAGED_IP_INVALID, device), correlationId);
-            return;
-        }
-
-//        if (validateInformationDevice(device.getDiscoveredDateTime().toString(), TIME_REGEX)){
-//            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-//                    Message.DISCOVERED_DATETIME_INVALID, device), correlationId);
-//            return;
-//        }
-//
-//        if (validateInformationDevice(device.getLastKnownUpAt().toString(), TIME_REGEX)){
-//            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-//                    Message.LAST_KNOWN_UP_AT_INVALID, device), correlationId);
-//            return;
-//        }
-//
-//        if (validateInformationDevice(device.getModifiedDate().toString(), TIME_REGEX)){
-//            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-//                    Message.MODIFIED_DATE_INVALID, device), correlationId);
-//            return;
-//        }
-
-        // Validate Date field
-        if (device.getModifiedDate() == null || device.getLastKnownUpAt() == null ||
-                device.getDiscoveredDateTime() == null) {
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.DATETIME_INVALID, device), correlationId);
-            return;
-        }
-
-        // Check exist IpAddress
-        if (deviceRepository.existDeviceByIpAddress(device.getIpAddress())) {
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.IPADDRESS_EXISTS, device), correlationId);
-            return;
-        }
-
-        // Check exist MacAddress
-        if (deviceRepository.existDeviceByMacAddress(device.getMacAddress())) {
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.MAC_ADDRESS_EXISTS, device), correlationId);
-            return;
-        }
-
-        // Check exist ManagedIp
-        if (deviceRepository.existDeviceByManagedIp(device.getManagedIp())) {
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.MANAGED_IP_EXISTS, device), correlationId);
-            return;
-        }
-
-        try {
-            deviceRepository.insert(device);
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.OK.value(),
-                    Message.SUCCESS, device), correlationId);
-        } catch (Exception e) {
-            sender.replyMessage(destination,new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.FAIL, device), correlationId);
+        if(validateInvalidDevice(device, correlationId, destination) || checkExistDevice(device, correlationId, destination)) {
+            try {
+                deviceRepository.insert(device);
+                sender.replyMessage(destination, new ResponseModel(HttpStatus.OK.value(),
+                        Message.SUCCESS, device), correlationId);
+            } catch (Exception e) {
+                sender.replyMessage(destination,new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                        Message.FAIL, device), correlationId);
+            }
         }
     }
 
     // Update a device
     public void updateDevice(Device device, String correlationId, Destination destination) {
-        if (validateInformationDevice(device.getIpAddress(), IPV4_REGEX)) {
-            sender.replyMessage(destination,new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.IPADDRESS_INVALID, device), correlationId);
-            return;
-        }
-
-        if (validateInformationDevice(device.getMacAddress(), MAC_REGEX)) {
-            sender.replyMessage(destination,new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.MAC_ADDRESS_INVALID, device), correlationId);
-            return;
-        }
-
-        if (validateInformationDevice(device.getManagedIp(), IPV4_REGEX)) {
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.MANAGED_IP_INVALID, device), correlationId);
-            return;
-        }
-
-        if (device.getModifiedDate() == null || device.getLastKnownUpAt() == null ||
-                device.getDiscoveredDateTime() == null) {
-            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                    Message.DATETIME_INVALID, device), correlationId);
-            return;
-        }
-
-        Optional<Device> optionalDevice = deviceRepository.findDeviceById(device.getId());
-        if (optionalDevice.isPresent()) {
-            Device updateDevice = optionalDevice.get();
-            if (updateDevice.getIpAddress().equals(device.getIpAddress())
-                    && updateDevice.getMacAddress().equals(device.getMacAddress())) {
-                deviceRepository.save(device);
-                sender.replyMessage(destination, new ResponseModel(HttpStatus.OK.value(),
-                        Message.SUCCESS, device), correlationId);
-                return;
-            }
-            if (!updateDevice.getIpAddress().equals(device.getIpAddress())) {
-                if (deviceRepository.existDeviceByIpAddress(device.getIpAddress())) {
-                    sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                            Message.IPADDRESS_EXISTS, device), correlationId);
+        if(validateInvalidDevice(device, correlationId, destination)) {
+            Optional<Device> optionalDevice = deviceRepository.findDeviceById(device.getId());
+            if (optionalDevice.isPresent()) {
+                Device updateDevice = optionalDevice.get();
+                if (updateDevice.getIpAddress().equals(device.getIpAddress())
+                        && updateDevice.getMacAddress().equals(device.getMacAddress())) {
+                    deviceRepository.save(device);
+                    sender.replyMessage(destination, new ResponseModel(HttpStatus.OK.value(),
+                            Message.SUCCESS, device), correlationId);
                     return;
                 }
-            }
-            if (!updateDevice.getMacAddress().equals(device.getMacAddress())) {
-                if (deviceRepository.existDeviceByMacAddress(device.getMacAddress())) {
-                    sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                            Message.MAC_ADDRESS_EXISTS, device), correlationId);
-                    return;
+                if (!updateDevice.getIpAddress().equals(device.getIpAddress())) {
+                    if (deviceRepository.existDeviceByIpAddress(device.getIpAddress())) {
+                        sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                                Message.IPADDRESS_EXISTS, device), correlationId);
+                        return;
+                    }
                 }
-            }
-
-            if  (!updateDevice.getManagedIp().equals(device.getManagedIp())) {
-                if (deviceRepository.existDeviceByManagedIp(device.getManagedIp())) {
-                    sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                            Message.MANAGED_IP_EXISTS, device), correlationId);
-                    return;
+                if (!updateDevice.getMacAddress().equals(device.getMacAddress())) {
+                    if (deviceRepository.existDeviceByMacAddress(device.getMacAddress())) {
+                        sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                                Message.MAC_ADDRESS_EXISTS, device), correlationId);
+                        return;
+                    }
                 }
-            }
 
-            try {
-                deviceRepository.save(device);
-                sender.replyMessage(destination, new ResponseModel(HttpStatus.OK.value(),
-                        Message.SUCCESS, device), correlationId);
-            } catch (Exception e) {
-                sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
-                        Message.FAIL, device), correlationId);
+                if  (!updateDevice.getManagedIp().equals(device.getManagedIp())) {
+                    if (deviceRepository.existDeviceByManagedIp(device.getManagedIp())) {
+                        sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                                Message.MANAGED_IP_EXISTS, device), correlationId);
+                        return;
+                    }
+                }
+
+                try {
+                    deviceRepository.save(device);
+                    sender.replyMessage(destination, new ResponseModel(HttpStatus.OK.value(),
+                            Message.SUCCESS, device), correlationId);
+                } catch (Exception e) {
+                    sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                            Message.FAIL, device), correlationId);
+                }
+            } else {
+                sender.replyMessage(destination,new ResponseModel(HttpStatus.NOT_FOUND.value(),
+                        Message.NOT_FOUND, device), correlationId);
             }
-        } else {
-            sender.replyMessage(destination,new ResponseModel(HttpStatus.NOT_FOUND.value(),
-                    Message.NOT_FOUND, device), correlationId);
         }
     }
 
@@ -223,6 +135,12 @@ public class DeviceService {
         }
     }
 
+    public void getAll(String correlationId, Destination destination) {
+        List<Device> devices = deviceRepository.findAll();
+        sender.replyMessage(destination, new ResponseModel(HttpStatus.OK.value(),
+                Message.SUCCESS, devices), correlationId);
+    }
+
     public boolean validateInformationDevice(String info, String REGEX) {
         Pattern pattern = Pattern.compile(REGEX);
         if (info == null) {
@@ -230,5 +148,61 @@ public class DeviceService {
         }
         Matcher matcher = pattern.matcher(info);
         return !matcher.matches();
+    }
+
+    public boolean validateInvalidDevice(Device device, String correlationId, Destination destination) {
+        // Validate IPAddress
+        if (validateInformationDevice(device.getIpAddress(), IPV4_REGEX)) {
+            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                    Message.IPADDRESS_INVALID, device), correlationId);
+            return false;
+        }
+
+        // Validate MacAddress
+        if (validateInformationDevice(device.getMacAddress(), MAC_REGEX)) {
+            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                    Message.MAC_ADDRESS_INVALID, device), correlationId);
+            return false;
+        }
+
+        // Validate ManagedIP
+        if (validateInformationDevice(device.getManagedIp(), IPV4_REGEX)) {
+            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                    Message.MANAGED_IP_INVALID, device), correlationId);
+            return false;
+        }
+
+        // Validate Date field
+        if (device.getModifiedDate() == null || device.getLastKnownUpAt() == null ||
+                device.getDiscoveredDateTime() == null) {
+            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                    Message.DATETIME_INVALID, device), correlationId);
+            return false;
+        }
+        return true;
+    }
+
+    public boolean checkExistDevice(Device device, String correlationId, Destination destination) {
+        // Check exist IpAddress
+        if (deviceRepository.existDeviceByIpAddress(device.getIpAddress())) {
+            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                    Message.IPADDRESS_EXISTS, device), correlationId);
+            return false;
+        }
+
+        // Check exist MacAddress
+        if (deviceRepository.existDeviceByMacAddress(device.getMacAddress())) {
+            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                    Message.MAC_ADDRESS_EXISTS, device), correlationId);
+            return false;
+        }
+
+        // Check exist ManagedIp
+        if (deviceRepository.existDeviceByManagedIp(device.getManagedIp())) {
+            sender.replyMessage(destination, new ResponseModel(HttpStatus.BAD_REQUEST.value(),
+                    Message.MANAGED_IP_EXISTS, device), correlationId);
+            return false;
+        }
+        return true;
     }
 }
