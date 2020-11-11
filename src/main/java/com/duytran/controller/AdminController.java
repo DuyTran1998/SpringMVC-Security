@@ -4,7 +4,6 @@ import com.duytran.constant.Header;
 import com.duytran.activemq.Sender;
 import com.duytran.models.CreditModel;
 import com.duytran.models.MessageTransferModel;
-import com.duytran.services.UserService;
 import com.duytran.thread.MessagingWorker;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.activemq.ActiveMQConnectionFactory;
